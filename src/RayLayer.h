@@ -36,7 +36,7 @@ public:
       sphere.MaterialIndex = 1;
       m_Scene.Spheres.push_back(sphere);
     }
-  };
+  }
 
   virtual void OnUpdate(float ts) override { m_Camera.OnUpdate(ts); }
 
@@ -104,7 +104,7 @@ public:
     m_Renderer.Render(m_Scene, m_Camera);
 
     m_LastRenderTime = timer.ElapsedMillis();
-  };
+  }
 
 private:
   Renderer m_Renderer;
@@ -112,5 +112,5 @@ private:
   Scene m_Scene;
   uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
-  float m_LastRenderTime = 0.0f;
+  float m_LastRenderTime = 0.0F;
 };

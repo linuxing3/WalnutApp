@@ -41,7 +41,6 @@ Application *Walnut::CreateApplication(int argc, char **argv) {
   auto rayLayer = make_shared<RayLayer>();
   app->PushLayer(demoLayer);
   app->PushLayer(rayLayer);
-  //   app->PushLayer<ExampleLayer>();
   app->SetMenubarCallback([app]() {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Exit")) {
