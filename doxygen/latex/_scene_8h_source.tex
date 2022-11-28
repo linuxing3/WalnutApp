@@ -1,0 +1,32 @@
+\hypertarget{_scene_8h_source}{}\doxysection{Scene.\+h}
+\label{_scene_8h_source}\index{src/Scene.h@{src/Scene.h}}
+\mbox{\hyperlink{_scene_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#pragma once}}
+\DoxyCodeLine{2 }
+\DoxyCodeLine{3 \textcolor{preprocessor}{\#include <glm/glm.hpp>}}
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{6 }
+\DoxyCodeLine{7 \textcolor{keyword}{struct }\mbox{\hyperlink{struct_material}{Material}}}
+\DoxyCodeLine{8 \{}
+\DoxyCodeLine{9     glm::vec3 \mbox{\hyperlink{struct_material_a4ee44d1a8ef94edf840c26bd9f8276d7}{Albedo}}\{ 1.0f \};}
+\DoxyCodeLine{10     \textcolor{keywordtype}{float} \mbox{\hyperlink{struct_material_a909d7c43062f35668676364d3873449d}{Roughness}} = 1.0f;}
+\DoxyCodeLine{11     \textcolor{keywordtype}{float} \mbox{\hyperlink{struct_material_ae520b79b420ddef20d0a89437a7b6de6}{Metallic}} = 0.0f;}
+\DoxyCodeLine{12 \};}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 \textcolor{keyword}{struct }\mbox{\hyperlink{struct_sphere}{Sphere}}}
+\DoxyCodeLine{15 \{}
+\DoxyCodeLine{16     glm::vec3 \mbox{\hyperlink{struct_sphere_acb8fae3b117e5abb2521532fd5ed5274}{Position}}\{0.0f\};}
+\DoxyCodeLine{17     \textcolor{keywordtype}{float} \mbox{\hyperlink{struct_sphere_a836eecfcbb74c8cc9906395c2131cfe6}{Radius}} = 0.5f;}
+\DoxyCodeLine{18 }
+\DoxyCodeLine{19     \textcolor{keywordtype}{int} \mbox{\hyperlink{struct_sphere_af0110435a8a751da726a4186f2b28719}{MaterialIndex}} = 0;}
+\DoxyCodeLine{20 \};}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{keyword}{struct }\mbox{\hyperlink{struct_scene}{Scene}}}
+\DoxyCodeLine{23 \{}
+\DoxyCodeLine{24     std::vector<Sphere> \mbox{\hyperlink{struct_scene_abd2009e524ef86f5fa897a878d8798ef}{Spheres}};}
+\DoxyCodeLine{25     std::vector<Material> \mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}};}
+\DoxyCodeLine{26 \};}
+
+\end{DoxyCode}

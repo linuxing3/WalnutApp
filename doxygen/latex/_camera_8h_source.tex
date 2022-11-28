@@ -1,0 +1,56 @@
+\hypertarget{_camera_8h_source}{}\doxysection{Camera.\+h}
+\label{_camera_8h_source}\index{src/Camera.h@{src/Camera.h}}
+\mbox{\hyperlink{_camera_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#pragma once}}
+\DoxyCodeLine{2 }
+\DoxyCodeLine{3 \textcolor{preprocessor}{\#include <glm/glm.hpp>}}
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{5 }
+\DoxyCodeLine{6 \textcolor{keyword}{class }\mbox{\hyperlink{class_camera}{Camera}}}
+\DoxyCodeLine{7 \{}
+\DoxyCodeLine{8 \textcolor{keyword}{public}:}
+\DoxyCodeLine{9     \mbox{\hyperlink{class_camera}{Camera}}(\textcolor{keywordtype}{float} verticalFOV, \textcolor{keywordtype}{float} nearClip, \textcolor{keywordtype}{float} farClip);}
+\DoxyCodeLine{10 }
+\DoxyCodeLine{11     \textcolor{keywordtype}{void} \mbox{\hyperlink{class_camera_a68bfba631ba7cfa8151f8a480a863815}{OnUpdate}}(\textcolor{keywordtype}{float} ts);}
+\DoxyCodeLine{12     \textcolor{keywordtype}{void} \mbox{\hyperlink{class_camera_ace7aff9786e0bb121a5b27c04a8069bc}{OnResize}}(uint32\_t width, uint32\_t height);}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14     \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_camera_a1524490ab316f64c8916ba19573f5722}{GetProjection}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_Projection; \}}
+\DoxyCodeLine{15     \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_camera_aafda5d8f1cf0a0d897545777f704861c}{GetInverseProjection}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_InverseProjection; \}}
+\DoxyCodeLine{16     \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_camera_abaeb3a38e6dc6a8289b3d65aa2932dc5}{GetView}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_View; \}}
+\DoxyCodeLine{17     \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_camera_a988b75be15d9f7023526dda361ddb3ae}{GetInverseView}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_InverseView; \}}
+\DoxyCodeLine{18     }
+\DoxyCodeLine{19     \textcolor{keyword}{const} glm::vec3\& \mbox{\hyperlink{class_camera_a2c10b520825d2b11794af19ec8c82168}{GetPosition}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_Position; \}}
+\DoxyCodeLine{20     \textcolor{keyword}{const} glm::vec3\& \mbox{\hyperlink{class_camera_a6cbd9edbdfbf2174fa00d34d4cdcb309}{GetDirection}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_ForwardDirection; \}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22     \textcolor{keyword}{const} std::vector<glm::vec3>\& \mbox{\hyperlink{class_camera_aaaef7c4874fba9db17dfb5af2b624cfa}{GetRayDirections}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} m\_RayDirections; \}}
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24     \textcolor{keywordtype}{float} \mbox{\hyperlink{class_camera_a8f2128fcc82174734772ea9953479388}{GetRotationSpeed}}();}
+\DoxyCodeLine{25 \textcolor{keyword}{private}:}
+\DoxyCodeLine{26     \textcolor{keywordtype}{void} RecalculateProjection();}
+\DoxyCodeLine{27     \textcolor{keywordtype}{void} RecalculateView();}
+\DoxyCodeLine{28     \textcolor{keywordtype}{void} RecalculateRayDirections();}
+\DoxyCodeLine{29 \textcolor{keyword}{private}:}
+\DoxyCodeLine{30     glm::mat4 m\_Projection\{ 1.0f \};}
+\DoxyCodeLine{31     glm::mat4 m\_View\{ 1.0f \};}
+\DoxyCodeLine{32     glm::mat4 m\_InverseProjection\{ 1.0f \};}
+\DoxyCodeLine{33     glm::mat4 m\_InverseView\{ 1.0f \};}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35     \textcolor{comment}{// for perspective function to calculate projection matrix}}
+\DoxyCodeLine{36     \textcolor{keywordtype}{float} m\_VerticalFOV = 45.0f;}
+\DoxyCodeLine{37     \textcolor{keywordtype}{float} m\_NearClip = 0.1f;}
+\DoxyCodeLine{38     \textcolor{keywordtype}{float} m\_FarClip = 100.0f;}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{40     \textcolor{comment}{// for lookAt function to calculate view matrix}}
+\DoxyCodeLine{41     glm::vec3 m\_Position\{0.0f, 0.0f, 0.0f\};}
+\DoxyCodeLine{42     glm::vec3 m\_ForwardDirection\{0.0f, 0.0f, 0.0f\};}
+\DoxyCodeLine{43 }
+\DoxyCodeLine{44     \textcolor{comment}{// Cached ray directions}}
+\DoxyCodeLine{45     std::vector<glm::vec3> m\_RayDirections;}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47     glm::vec2 m\_LastMousePosition\{ 0.0f, 0.0f \};}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49     uint32\_t m\_ViewportWidth = 0, m\_ViewportHeight = 0;}
+\DoxyCodeLine{50 \};}
+
+\end{DoxyCode}

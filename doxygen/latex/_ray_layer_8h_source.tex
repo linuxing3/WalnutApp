@@ -1,0 +1,122 @@
+\hypertarget{_ray_layer_8h_source}{}\doxysection{Ray\+Layer.\+h}
+\label{_ray_layer_8h_source}\index{src/RayLayer.h@{src/RayLayer.h}}
+\mbox{\hyperlink{_ray_layer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#include "{}Application.h"{}}}
+\DoxyCodeLine{2 }
+\DoxyCodeLine{3 \textcolor{preprocessor}{\#include "{}Image.h"{}}}
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include "{}Timer.h"{}}}
+\DoxyCodeLine{5 }
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{_camera_8h}{Camera.h}}"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{_renderer_8h}{Renderer.h}}"{}}}
+\DoxyCodeLine{8 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <glm/gtc/type\_ptr.hpp>}}
+\DoxyCodeLine{10 }
+\DoxyCodeLine{11 \textcolor{keyword}{using namespace }Walnut;}
+\DoxyCodeLine{12 }
+\DoxyCodeLine{13 \textcolor{keyword}{class }\mbox{\hyperlink{class_ray_layer}{RayLayer}} : \textcolor{keyword}{public} Walnut::Layer \{}
+\DoxyCodeLine{14 \textcolor{keyword}{public}:}
+\DoxyCodeLine{15   \mbox{\hyperlink{class_ray_layer_a54e32de3d7f1b6dffaa88c79dd08e3cb}{RayLayer}}() : m\_Camera(45.0f, 0.1f, 100.0f) \{}
+\DoxyCodeLine{16     \mbox{\hyperlink{struct_material}{Material}} \&pinkSphere = m\_Scene.\mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}}.emplace\_back();}
+\DoxyCodeLine{17     pinkSphere.\mbox{\hyperlink{struct_material_a4ee44d1a8ef94edf840c26bd9f8276d7}{Albedo}} = \{1.0f, 0.0f, 1.0f\};}
+\DoxyCodeLine{18     pinkSphere.\mbox{\hyperlink{struct_material_a909d7c43062f35668676364d3873449d}{Roughness}} = 0.0f;}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20     \mbox{\hyperlink{struct_material}{Material}} \&blueSphere = m\_Scene.\mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}}.emplace\_back();}
+\DoxyCodeLine{21     blueSphere.\mbox{\hyperlink{struct_material_a4ee44d1a8ef94edf840c26bd9f8276d7}{Albedo}} = \{0.2f, 0.3f, 1.0f\};}
+\DoxyCodeLine{22     blueSphere.\mbox{\hyperlink{struct_material_a909d7c43062f35668676364d3873449d}{Roughness}} = 0.1f;}
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24     \{}
+\DoxyCodeLine{25       \mbox{\hyperlink{struct_sphere}{Sphere}} sphere;}
+\DoxyCodeLine{26       sphere.\mbox{\hyperlink{struct_sphere_acb8fae3b117e5abb2521532fd5ed5274}{Position}} = \{0.0f, 0.0f, 0.0f\};}
+\DoxyCodeLine{27       sphere.\mbox{\hyperlink{struct_sphere_a836eecfcbb74c8cc9906395c2131cfe6}{Radius}} = 1.0f;}
+\DoxyCodeLine{28       sphere.\mbox{\hyperlink{struct_sphere_af0110435a8a751da726a4186f2b28719}{MaterialIndex}} = 0;}
+\DoxyCodeLine{29       m\_Scene.\mbox{\hyperlink{struct_scene_abd2009e524ef86f5fa897a878d8798ef}{Spheres}}.push\_back(sphere);}
+\DoxyCodeLine{30     \}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32     \{}
+\DoxyCodeLine{33       \mbox{\hyperlink{struct_sphere}{Sphere}} sphere;}
+\DoxyCodeLine{34       sphere.\mbox{\hyperlink{struct_sphere_acb8fae3b117e5abb2521532fd5ed5274}{Position}} = \{0.0f, -\/101.0f, 0.0f\};}
+\DoxyCodeLine{35       sphere.\mbox{\hyperlink{struct_sphere_a836eecfcbb74c8cc9906395c2131cfe6}{Radius}} = 100.0f;}
+\DoxyCodeLine{36       sphere.\mbox{\hyperlink{struct_sphere_af0110435a8a751da726a4186f2b28719}{MaterialIndex}} = 1;}
+\DoxyCodeLine{37       m\_Scene.\mbox{\hyperlink{struct_scene_abd2009e524ef86f5fa897a878d8798ef}{Spheres}}.push\_back(sphere);}
+\DoxyCodeLine{38     \}}
+\DoxyCodeLine{39   \}}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{41   \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_ray_layer_adff63f3b81516236f9ddfe78ef37ebd8}{OnUpdate}}(\textcolor{keywordtype}{float} ts)\textcolor{keyword}{ override }\{ m\_Camera.\mbox{\hyperlink{class_camera_a68bfba631ba7cfa8151f8a480a863815}{OnUpdate}}(ts); \}}
+\DoxyCodeLine{42 }
+\DoxyCodeLine{43   \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_ray_layer_acc624041f9790906669391c5ff85a73e}{OnUIRender}}()\textcolor{keyword}{ override }\{}
+\DoxyCodeLine{44     ImGui::Begin(\textcolor{stringliteral}{"{}Settings"{}});}
+\DoxyCodeLine{45     ImGui::Text(\textcolor{stringliteral}{"{}Last render: \%.3fms"{}}, m\_LastRenderTime);}
+\DoxyCodeLine{46     \textcolor{keywordflow}{if} (ImGui::Button(\textcolor{stringliteral}{"{}Render"{}})) \{}
+\DoxyCodeLine{47       \mbox{\hyperlink{class_ray_layer_aa0e99164f0a98a1ad14d6570029f60d2}{Render}}();}
+\DoxyCodeLine{48     \}}
+\DoxyCodeLine{49     ImGui::End();}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51     ImGui::Begin(\textcolor{stringliteral}{"{}Scene"{}});}
+\DoxyCodeLine{52     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} i = 0; i < m\_Scene.\mbox{\hyperlink{struct_scene_abd2009e524ef86f5fa897a878d8798ef}{Spheres}}.size(); i++) \{}
+\DoxyCodeLine{53       ImGui::PushID(i);}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{55       \mbox{\hyperlink{struct_sphere}{Sphere}} \&sphere = m\_Scene.\mbox{\hyperlink{struct_scene_abd2009e524ef86f5fa897a878d8798ef}{Spheres}}[i];}
+\DoxyCodeLine{56       ImGui::DragFloat3(\textcolor{stringliteral}{"{}Position"{}}, glm::value\_ptr(sphere.\mbox{\hyperlink{struct_sphere_acb8fae3b117e5abb2521532fd5ed5274}{Position}}), 0.1f);}
+\DoxyCodeLine{57       ImGui::DragFloat(\textcolor{stringliteral}{"{}Radius"{}}, \&sphere.\mbox{\hyperlink{struct_sphere_a836eecfcbb74c8cc9906395c2131cfe6}{Radius}}, 0.1f);}
+\DoxyCodeLine{58       ImGui::DragInt(\textcolor{stringliteral}{"{}Material"{}}, \&sphere.\mbox{\hyperlink{struct_sphere_af0110435a8a751da726a4186f2b28719}{MaterialIndex}}, 1.0f, 0,}
+\DoxyCodeLine{59                      (\textcolor{keywordtype}{int})m\_Scene.\mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}}.size() -\/ 1);}
+\DoxyCodeLine{60 }
+\DoxyCodeLine{61       ImGui::Separator();}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{63       ImGui::PopID();}
+\DoxyCodeLine{64     \}}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} i = 0; i < m\_Scene.\mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}}.size(); i++) \{}
+\DoxyCodeLine{67       ImGui::PushID(i);}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{69       \mbox{\hyperlink{struct_material}{Material}} \&material = m\_Scene.\mbox{\hyperlink{struct_scene_a9f79c9d7fe09880909acbcc37afe2738}{Materials}}[i];}
+\DoxyCodeLine{70       ImGui::ColorEdit3(\textcolor{stringliteral}{"{}Albedo"{}}, glm::value\_ptr(material.\mbox{\hyperlink{struct_material_a4ee44d1a8ef94edf840c26bd9f8276d7}{Albedo}}));}
+\DoxyCodeLine{71       ImGui::DragFloat(\textcolor{stringliteral}{"{}Roughness"{}}, \&material.\mbox{\hyperlink{struct_material_a909d7c43062f35668676364d3873449d}{Roughness}}, 0.05f, 0.0f, 1.0f);}
+\DoxyCodeLine{72       ImGui::DragFloat(\textcolor{stringliteral}{"{}Metallic"{}}, \&material.\mbox{\hyperlink{struct_material_ae520b79b420ddef20d0a89437a7b6de6}{Metallic}}, 0.05f, 0.0f, 1.0f);}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{74       ImGui::Separator();}
+\DoxyCodeLine{75 }
+\DoxyCodeLine{76       ImGui::PopID();}
+\DoxyCodeLine{77     \}}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79     ImGui::End();}
+\DoxyCodeLine{80 }
+\DoxyCodeLine{81     ImGui::PushStyleVar(ImGuiStyleVar\_WindowPadding, ImVec2(0.0f, 0.0f));}
+\DoxyCodeLine{82     ImGui::Begin(\textcolor{stringliteral}{"{}Viewport"{}});}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{84     m\_ViewportWidth = ImGui::GetContentRegionAvail().x;}
+\DoxyCodeLine{85     m\_ViewportHeight = ImGui::GetContentRegionAvail().y;}
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87     \textcolor{keyword}{auto} image = m\_Renderer.\mbox{\hyperlink{class_renderer_a115fa7a21cee8313ef539945c3939b19}{GetFinalImage}}();}
+\DoxyCodeLine{88     \textcolor{keywordflow}{if} (image)}
+\DoxyCodeLine{89       ImGui::Image(image-\/>GetDescriptorSet(),}
+\DoxyCodeLine{90                    \{(float)image-\/>GetWidth(), (float)image-\/>GetHeight()\},}
+\DoxyCodeLine{91                    ImVec2(0, 1), ImVec2(1, 0));}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93     ImGui::End();}
+\DoxyCodeLine{94     ImGui::PopStyleVar();}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96     \mbox{\hyperlink{class_ray_layer_aa0e99164f0a98a1ad14d6570029f60d2}{Render}}();}
+\DoxyCodeLine{97   \}}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{99   \textcolor{keywordtype}{void} \mbox{\hyperlink{class_ray_layer_aa0e99164f0a98a1ad14d6570029f60d2}{Render}}() \{}
+\DoxyCodeLine{100     Timer timer;}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102     m\_Renderer.\mbox{\hyperlink{class_renderer_aa416d01dac6aaf1d91b035ed26273f8e}{OnResize}}(m\_ViewportWidth, m\_ViewportHeight);}
+\DoxyCodeLine{103     m\_Camera.\mbox{\hyperlink{class_camera_ace7aff9786e0bb121a5b27c04a8069bc}{OnResize}}(m\_ViewportWidth, m\_ViewportHeight);}
+\DoxyCodeLine{104     m\_Renderer.\mbox{\hyperlink{class_renderer_a81b26b5d47c5f6c01d684768979aca96}{Render}}(m\_Scene, m\_Camera);}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106     m\_LastRenderTime = timer.ElapsedMillis();}
+\DoxyCodeLine{107   \}}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{109 \textcolor{keyword}{private}:}
+\DoxyCodeLine{110   \mbox{\hyperlink{class_renderer}{Renderer}} m\_Renderer;}
+\DoxyCodeLine{111   \mbox{\hyperlink{class_camera}{Camera}} m\_Camera;}
+\DoxyCodeLine{112   \mbox{\hyperlink{struct_scene}{Scene}} m\_Scene;}
+\DoxyCodeLine{113   uint32\_t m\_ViewportWidth = 0, m\_ViewportHeight = 0;}
+\DoxyCodeLine{114 }
+\DoxyCodeLine{115   \textcolor{keywordtype}{float} m\_LastRenderTime = 0.0F;}
+\DoxyCodeLine{116 \};}
+
+\end{DoxyCode}
