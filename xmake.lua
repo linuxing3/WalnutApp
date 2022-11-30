@@ -5,7 +5,7 @@ add_requires("glfw", "glm", "stb", "loguru")
 add_requires("imgui v1.89-docking", { configs = {glfw_vulkan = true}})
 
 -- Private Repos
-add_repositories("private", "pacakages")
+add_repositories("myrepo myrepo")
 add_requires("walnut 1.0", "lve 1.0", "emilib")
 
 target("WalnutApp")
