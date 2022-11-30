@@ -2,6 +2,9 @@
 #include "EntryPoint.h"
 #include <iostream>
 #include <memory>
+#include <loguru.hpp>
+#include <emilib/strprintf.cpp>
+#include <iostream>
 
 #include "RayLayer.h"
 #include "DemoLayer.h"
@@ -14,6 +17,7 @@ using Walnut::CreateApplication;
 using Walnut::Layer;
 
 Application *Walnut::CreateApplication(int argc, char **argv) {
+  std::cout << emilib::strprintf("Format float: %.1f", 1.234) << std::endl;
   ApplicationSpecification spec;
   spec.Name = "Walnut Example";
 
@@ -21,7 +25,7 @@ Application *Walnut::CreateApplication(int argc, char **argv) {
   auto demoLayer = make_shared<DemoLayer>();
   auto rayLayer = make_shared<RayLayer>();
   app->PushLayer(demoLayer);
-  app->PushLayer(rayLayer);
+//   app->PushLayer(rayLayer);
   app->SetMenubarCallback([app]() {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Exit")) {
