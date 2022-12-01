@@ -1,6 +1,11 @@
 # Xmake cache
 .xmake/
 build/
+xcmake/
+cmakemsbuild/
+cmakevcpkg/
+xninja/
+vsxmake/
 .cache/
 compile_commands
 
