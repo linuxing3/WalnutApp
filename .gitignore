@@ -7,7 +7,6 @@ cmakevcpkg/
 xninja/
 vsxmake/
 .cache/
-compile_commands
 
 # MacOS Cache
 .DS_Store
