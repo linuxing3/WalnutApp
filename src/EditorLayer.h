@@ -4,7 +4,7 @@
 #include "Timer.h"
 
 #include "Camera.h"
-#include "Renderer.h"
+#include "XingRenderer.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <utility>
@@ -53,11 +53,14 @@ class EditorLayer : public Walnut::Layer
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
 
+  public:
+	xing::XingDevice *m_Device;
+
   private:
-	Renderer m_Renderer;
-	Camera   m_Camera;
-	Scene    m_Scene;
-	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+	xing::XingRenderer m_Renderer;
+	Camera             m_Camera;
+	Scene              m_Scene;
+	uint32_t           m_ViewportWidth = 0, m_ViewportHeight = 0;
 
 	float m_LastRenderTime = 0.0F;
 };

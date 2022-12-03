@@ -27,7 +27,7 @@ class XingRenderer
 	}
 
 	// FIXME:
-	void LoadGameObjects(XingDevice &device);
+	void LoadGameObjects();
 
   private:
 	glm::vec4 PerPixel(uint32_t x, uint32_t y);
@@ -39,6 +39,7 @@ class XingRenderer
 	const Camera *m_ActiveCamera = nullptr;
 
 	uint32_t           *m_ImageData = nullptr;
-	XingGameObject::Map gameObjects;
+	XingGameObject::Map m_GameObjects;
+	XingDevice         *m_Device = nullptr;
 };
 }        // namespace xing

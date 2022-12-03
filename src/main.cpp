@@ -7,8 +7,8 @@
 
 #include "DemoLayer.h"
 #include "EditorLayer.h"
-#include "GameEditorLayer.h"
-#include "RayLayer.h"
+// #include "GameEditorLayer.h"
+// #include "RayLayer.h"
 
 using std::make_shared;
 using std::shared_ptr;
@@ -19,23 +19,26 @@ using Walnut::Layer;
 
 Application *Walnut::CreateApplication(int argc, char **argv)
 {
-	std::cout << emilib::strprintf("Format float: %.1f", 1.234) << std::endl;
 	ApplicationSpecification spec;
-	spec.Name = "Walnut Example";
+	spec.Name = "XingApp";
 
-	auto *app         = new Application(spec);
-	auto  demoLayer   = make_shared<DemoLayer>();
-	auto  editorLayer = make_shared<EditorLayer>();
+	auto *app = new Application(spec);
+	std::cout << emilib::strprintf("App id: %s", app) << std::endl;
+	auto demoLayer = make_shared<DemoLayer>();
 	// auto  rayLayer    = make_shared<RayLayer>();
-
-	// TODO:
-	// std::shared_ptr<GameEditorLayer> gameEditorLayer;
-	// gameEditorLayer->setWindow(app->GetWindowHandle());
+	//
+	// NOTE: editor layer with some vulkan functions
+	auto editorLayer = make_shared<EditorLayer>();
+	auto window      = app->GetWindowHandle();
+	std::cout << emilib::strprintf("Window handle: %i", window) << std::endl;
+	xing::XingDevice xingDevice(*window);
+	std::cout << emilib::strprintf("Device id: %i", &xingDevice) << std::endl;
+	editorLayer->m_Device = &xingDevice;
 
 	app->PushLayer(demoLayer);
 	app->PushLayer(editorLayer);
-	// app->PushLayer(gameEditorLayer);
-	//   app->PushLayer(rayLayer);
+	// app->PushLayer(rayLayer);
+
 	app->SetMenubarCallback([app]() {
 		if (ImGui::BeginMenu("File"))
 		{
