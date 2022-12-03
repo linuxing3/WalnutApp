@@ -225,10 +225,10 @@ void XingDevice::createCommandPool()
 	}
 }
 
-// void XingDevice::createSurface()
-// {
-// 	window.createWindowSurface(instance, &surface_);
-// }
+void XingDevice::createSurface()
+{
+	// window.createWindowSurface(instance, &surface_);
+}
 
 bool XingDevice::isDeviceSuitable(VkPhysicalDevice device)
 {
@@ -485,7 +485,6 @@ void XingDevice::createBuffer(
 	bufferInfo.usage       = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	std::cout << "message" << std::endl;
 	if (vkCreateBuffer(device_, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create vertex buffer!");
