@@ -69,16 +69,16 @@ XingDevice::XingDevice(GLFWwindow &win) :
 
 XingDevice::~XingDevice()
 {
-	vkDestroyCommandPool(device_, commandPool, nullptr);
-	vkDestroyDevice(device_, nullptr);
-
-	if (enableValidationLayers)
-	{
-		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-	}
-
-	vkDestroySurfaceKHR(instance, surface_, nullptr);
-	vkDestroyInstance(instance, nullptr);
+	// vkDestroyCommandPool(device_, commandPool, nullptr);
+	// vkDestroyDevice(device_, nullptr);
+	//
+	// if (enableValidationLayers)
+	// {
+	// 	DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+	// }
+	//
+	// vkDestroySurfaceKHR(instance, surface_, nullptr);
+	// vkDestroyInstance(instance, nullptr);
 }
 
 void XingDevice::createInstance()
@@ -485,6 +485,7 @@ void XingDevice::createBuffer(
 	bufferInfo.usage       = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+	std::cout << "message" << std::endl;
 	if (vkCreateBuffer(device_, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create vertex buffer!");

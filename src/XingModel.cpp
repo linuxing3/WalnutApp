@@ -3,6 +3,7 @@
 #include "XingDevice.h"
 
 #include "lve_utils.hpp"
+#include <iostream>
 
 // libs
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -16,7 +17,7 @@
 #include <unordered_map>
 
 #ifndef ENGINE_DIR
-#	define ENGINE_DIR "../"
+#	define ENGINE_DIR "./"
 #endif
 
 namespace std
@@ -39,8 +40,8 @@ namespace xing
 XingModel::XingModel(XingDevice &device, const XingModel::Builder &builder) :
     xingDevice{device}
 {
-	createVertexBuffers(builder.vertices);
-	createIndexBuffers(builder.indices);
+	// createVertexBuffers(builder.vertices);
+	// createIndexBuffers(builder.indices);
 }
 
 XingModel::~XingModel()
@@ -49,27 +50,33 @@ XingModel::~XingModel()
 std::unique_ptr<XingModel> XingModel::createModelFromFile(
     XingDevice &device, const std::string &filepath)
 {
+	std::cout << "Loading Model" << std::endl;
 	Builder builder{};
 	builder.loadModel(ENGINE_DIR + filepath);
+	std::cout << "Making uniquie pointer" << std::endl;
 	return std::make_unique<XingModel>(device, builder);
 }
 
 void XingModel::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
+	std::cout << "Vertex Buffer size: " << vertices.size() << std::endl;
 	vertexCount = static_cast<uint32_t>(vertices.size());
 	assert(vertexCount >= 3 && "Vertex count must be at least 3");
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
 	uint32_t     vertexSize = sizeof(vertices[0]);
 
-	XingBuffer stagingBuffer{
+	std::cout << "Making stagingBuffer " << vertexSize << std::endl;
+	XingBuffer stagingBuffer(
 	    xingDevice,
 	    vertexSize,
 	    vertexCount,
 	    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 	    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-	};
+	    1);
+	std::cout << "Finished making stagingBuffer " << vertexSize << std::endl;
 
 	stagingBuffer.map();
+	std::cout << "Write to Vertex Buffer " << vertexSize << std::endl;
 	stagingBuffer.writeToBuffer((void *) vertices.data());
 
 	vertexBuffer = std::make_unique<XingBuffer>(
@@ -79,6 +86,7 @@ void XingModel::createVertexBuffers(const std::vector<Vertex> &vertices)
 	    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 	    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
+	std::cout << "Vertex Buffer Size: " << bufferSize << std::endl;
 	xingDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 }
 
@@ -164,6 +172,8 @@ std::vector<VkVertexInputAttributeDescription> XingModel::Vertex::getAttributeDe
 
 void XingModel::Builder::loadModel(const std::string &filepath)
 {
+	std::cout << "Loading Model in builder" << std::endl;
+	std::cout << filepath << std::endl;
 	tinyobj::attrib_t                attrib;
 	std::vector<tinyobj::shape_t>    shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -171,6 +181,7 @@ void XingModel::Builder::loadModel(const std::string &filepath)
 
 	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
 	{
+		std::cout << "Loading Model failed for loadObj " << std::endl;
 		throw std::runtime_error(warn + err);
 	}
 
@@ -219,6 +230,7 @@ void XingModel::Builder::loadModel(const std::string &filepath)
 			if (uniqueVertices.count(vertex) == 0)
 			{
 				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				// std::cout << "x: " << vertex.position.x << " y: " << vertex.position.y << std::endl;
 				vertices.push_back(vertex);
 			}
 			indices.push_back(uniqueVertices[vertex]);
