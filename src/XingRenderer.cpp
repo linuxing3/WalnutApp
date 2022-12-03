@@ -66,7 +66,7 @@ void XingRenderer::Render(const Scene &scene, const Camera &camera)
 	m_FinalImage->SetData(m_ImageData);
 
 	// TODO: load objects
-	// LoadGameObjects();
+	LoadGameObjects();
 }
 
 glm::vec4 XingRenderer::PerPixel(uint32_t x, uint32_t y)
@@ -77,47 +77,51 @@ glm::vec4 XingRenderer::PerPixel(uint32_t x, uint32_t y)
 //
 void XingRenderer::LoadGameObjects()
 {
-	// std::shared_ptr<XingModel> xingModel =
-	//     XingModel::createModelFromFile(*m_Device, "models/flat_vase.obj");
-	// auto flatVase                  = XingGameObject::createGameObject();
-	// flatVase.model                 = xingModel;
-	// flatVase.transform.translation = {-.5f, .5f, 0.f};
-	// flatVase.transform.scale       = {3.f, 1.5f, 3.f};
-	// m_GameObjects.emplace(flatVase.getId(), std::move(flatVase));
+	std::shared_ptr<XingModel> xingModel =
+	    XingModel::createModelFromFile(*m_Device, "models/flat_vase.obj");
+
+	std::cout << "flat vase: " << xingModel << std::endl;
+	auto flatVase                  = XingGameObject::createGameObject();
+	flatVase.model                 = xingModel;
+	flatVase.transform.translation = {-.5f, .5f, 0.f};
+	flatVase.transform.scale       = {3.f, 1.5f, 3.f};
+	m_GameObjects.emplace(flatVase.getId(), std::move(flatVase));
 	//
-	// xingModel                        = XingModel::createModelFromFile(*m_Device, "models/smooth_vase.obj");
-	// auto smoothVase                  = XingGameObject::createGameObject();
-	// smoothVase.model                 = xingModel;
-	// smoothVase.transform.translation = {.5f, .5f, 0.f};
-	// smoothVase.transform.scale       = {3.f, 1.5f, 3.f};
-	// m_GameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+	xingModel = XingModel::createModelFromFile(*m_Device, "models/smooth_vase.obj");
+	std::cout << "smooth vase: " << xingModel << std::endl;
+	auto smoothVase                  = XingGameObject::createGameObject();
+	smoothVase.model                 = xingModel;
+	smoothVase.transform.translation = {.5f, .5f, 0.f};
+	smoothVase.transform.scale       = {3.f, 1.5f, 3.f};
+	m_GameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+
+	xingModel = XingModel::createModelFromFile(*m_Device, "models/quad.obj");
+	std::cout << "quad vase: " << xingModel << std::endl;
+	auto floor                  = XingGameObject::createGameObject();
+	floor.model                 = xingModel;
+	floor.transform.translation = {0.f, .5f, 0.f};
+	floor.transform.scale       = {3.f, 1.f, 3.f};
+	m_GameObjects.emplace(floor.getId(), std::move(floor));
 	//
-	// xingModel                   = XingModel::createModelFromFile(*m_Device, "models/quad.obj");
-	// auto floor                  = XingGameObject::createGameObject();
-	// floor.model                 = xingModel;
-	// floor.transform.translation = {0.f, .5f, 0.f};
-	// floor.transform.scale       = {3.f, 1.f, 3.f};
-	// m_GameObjects.emplace(floor.getId(), std::move(floor));
-	//
-	// std::vector<glm::vec3> lightColors{
-	//     {1.f, .1f, .1f},
-	//     {.1f, .1f, 1.f},
-	//     {.1f, 1.f, .1f},
-	//     {1.f, 1.f, .1f},
-	//     {.1f, 1.f, 1.f},
-	//     {1.f, 1.f, 1.f}        //
-	// };
-	//
-	// for (int i = 0; i < lightColors.size(); i++)
-	// {
-	// 	auto pointLight  = XingGameObject::makePointLight(0.2f);
-	// 	pointLight.color = lightColors[i];
-	// 	auto rotateLight = glm::rotate(
-	// 	    glm::mat4(1.f),
-	// 	    (i * glm::two_pi<float>()) / lightColors.size(),
-	// 	    {0.f, -1.f, 0.f});
-	// 	pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-	// 	m_GameObjects.emplace(pointLight.getId(), std::move(pointLight));
-	// }
+	std::vector<glm::vec3> lightColors{
+	    {1.f, .1f, .1f},
+	    {.1f, .1f, 1.f},
+	    {.1f, 1.f, .1f},
+	    {1.f, 1.f, .1f},
+	    {.1f, 1.f, 1.f},
+	    {1.f, 1.f, 1.f}        //
+	};
+
+	for (int i = 0; i < lightColors.size(); i++)
+	{
+		auto pointLight  = XingGameObject::makePointLight(0.2f);
+		pointLight.color = lightColors[i];
+		auto rotateLight = glm::rotate(
+		    glm::mat4(1.f),
+		    (i * glm::two_pi<float>()) / lightColors.size(),
+		    {0.f, -1.f, 0.f});
+		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+		m_GameObjects.emplace(pointLight.getId(), std::move(pointLight));
+	}
 }
 }        // namespace xing

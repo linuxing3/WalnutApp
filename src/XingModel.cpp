@@ -50,10 +50,8 @@ XingModel::~XingModel()
 std::unique_ptr<XingModel> XingModel::createModelFromFile(
     XingDevice &device, const std::string &filepath)
 {
-	std::cout << "Loading Model" << std::endl;
 	Builder builder{};
 	builder.loadModel(ENGINE_DIR + filepath);
-	std::cout << "Making uniquie pointer" << std::endl;
 	return std::make_unique<XingModel>(device, builder);
 }
 
