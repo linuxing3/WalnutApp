@@ -19,6 +19,11 @@ class EditorLayer : public Walnut::Layer
 	{
 	}
 
+	virtual void OnAttach() override
+	{
+		m_Renderer.LoadGameObjects();
+	}
+
 	virtual void OnUpdate(float ts) override
 	{
 		m_Camera.OnUpdate(ts);
@@ -37,6 +42,11 @@ class EditorLayer : public Walnut::Layer
 			             {(float) image->GetWidth(), (float) image->GetHeight()},
 			             ImVec2(0, 1), ImVec2(1, 0));
 
+		auto model = m_Renderer.GetFinalModel();
+		if (model)
+			ImGui::Image(model->GetDescriptorSet(),
+			             {(float) model->GetWidth(), (float) model->GetHeight()},
+			             ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::End();
 
 		Render();
@@ -48,13 +58,14 @@ class EditorLayer : public Walnut::Layer
 
 		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
 		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
-		m_Renderer.Render(m_Scene, m_Camera);
+		m_Renderer.RenderBackground(m_Scene, m_Camera);
+		m_Renderer.RenderModel(m_Scene, m_Camera);
 
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
 
   public:
-	xing::XingDevice *m_Device;
+	Walnut::Application *m_App;
 
   private:
 	xing::XingRenderer m_Renderer;

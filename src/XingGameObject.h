@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XingModel.h"
+#include "Model.h"
 
 // libs
 #include <glm/gtc/matrix_transform.hpp>
@@ -60,7 +60,7 @@ class XingGameObject
 	TransformComponent transform{};
 
 	// Optional pointer components
-	std::shared_ptr<XingModel>           model{};
+	std::shared_ptr<Walnut::Model>       model{};
 	std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
   private:
