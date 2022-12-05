@@ -4,9 +4,11 @@
 
 #include "Image.h"
 #include "Model.h"
+#include "glm/fwd.hpp"
 #include "loguru.hpp"
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <ostream>
 namespace Utils
 {
@@ -52,31 +54,33 @@ void XingRenderer::OnResize(uint32_t width, uint32_t height)
 
 		m_FinalModel->Resize(width, height);
 	}
-	else
-	{
-		m_FinalModel = std::make_shared<Walnut::Model>(width, height, Walnut::ImageFormat::RGBA);
-	}
-
-	delete[] m_ModelData;
-	m_ModelData = new uint32_t[width * height];
 }
 
+//
+void XingRenderer::LoadGameObjects()
+{
+	std::cout << "Loading models and texture images " << std::endl;
+	m_FinalModel = std::make_shared<Walnut::Model>("models/viking_room.obj", "models/viking_room.png");
+	// m_FinalModel->CreateVertexBuffer();
+	// m_FinalModel->CreateIndexBuffer();
+}
+
+// FIXME: render texture image of a model
 void XingRenderer::RenderModel(const Scene &scene, const Camera &camera)
 {
 	m_ActiveScene  = &scene;
 	m_ActiveCamera = &camera;
+	// auto data      = m_FinalModel->GetTextImageData();
+	// for (uint32_t y = 0; y < m_FinalImage->GetHeight(); ++y)
+	// {
+	// 	for (uint32_t x = 0; x < m_FinalImage->GetWidth(); ++x)
+	// 	{
+	// 		uint32_t index          = x + (uint32_t) (y * m_FinalImage->GetWidth());
+	// 		m_ModelImageData[index] = data[index];
+	// 	}
+	// }
 	//
-	for (uint32_t y = 0; y < m_FinalImage->GetHeight() / 2; ++y)
-	{
-		for (uint32_t x = 0; x < m_FinalImage->GetWidth() / 2; ++x)
-		{
-			glm::vec4 color(0.3f, 0.6f, 0.2f, 1.0f);
-			color              = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
-			uint32_t index     = x + (uint32_t) (y * m_FinalModel->GetWidth() / 2);
-			m_ModelData[index] = Utils::ConvertToRGBA(color);
-		}
-	}
-	m_FinalModel->SetTextureData(m_ModelData);
+	// m_FinalModel->SetTextureData(m_ModelImageData);
 }
 
 void XingRenderer::RenderBackground(const Scene &scene, const Camera &camera)
@@ -101,13 +105,11 @@ void XingRenderer::RenderBackground(const Scene &scene, const Camera &camera)
 
 glm::vec4 XingRenderer::PerPixel(uint32_t x, uint32_t y)
 {
+	if (x > m_FinalImage->GetWidth() / 4 && x < m_FinalImage->GetWidth() * 3 / 4 && y > m_FinalImage->GetHeight() / 4 && y < m_FinalImage->GetHeight() * 3 / 4)
+	{
+		return glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 	return glm::vec4(0.5f, 0.3f, 0.4f, 1.0f);
 }
 
-//
-void XingRenderer::LoadGameObjects()
-{
-	std::cout << "Loading models and texture images " << std::endl;
-	Walnut::Model viking_room_model{"models/viking_room.obj", "models/viking_room.png"};
-}
 }        // namespace xing

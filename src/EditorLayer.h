@@ -44,9 +44,12 @@ class EditorLayer : public Walnut::Layer
 
 		auto model = m_Renderer.GetFinalModel();
 		if (model)
+		{
+			std::cout << "found model " << model->GetDescriptorSet() << std::endl;
 			ImGui::Image(model->GetDescriptorSet(),
 			             {(float) model->GetWidth(), (float) model->GetHeight()},
 			             ImVec2(0, 1), ImVec2(1, 0));
+		}
 		ImGui::End();
 
 		Render();
@@ -58,7 +61,7 @@ class EditorLayer : public Walnut::Layer
 
 		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
 		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
-		m_Renderer.RenderBackground(m_Scene, m_Camera);
+		// m_Renderer.RenderBackground(m_Scene, m_Camera);
 		m_Renderer.RenderModel(m_Scene, m_Camera);
 
 		m_LastRenderTime = timer.ElapsedMillis();

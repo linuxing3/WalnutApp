@@ -51,6 +51,8 @@ class Model
   public:
 	void SetTextureData(const void *data);
 	void Resize(uint32_t width, uint32_t height);
+	void CreateIndexBuffer();
+	void CreateVertexBuffer();
 
   public:
 	VkDescriptorSet GetDescriptorSet() const
@@ -72,6 +74,11 @@ class Model
 		return m_TextureImage;
 	}
 
+	uint8_t *GetTextImageData() const
+	{
+		return m_ImageData;
+	}
+
   private:
 	void AllocateTextureMemory(uint64_t size);
 	void Release();
@@ -84,9 +91,12 @@ class Model
 	std::unique_ptr<Builder> m_Builder;
 
 	std::unique_ptr<VkBuffer> m_VertexBuffer;
+	VkDeviceMemory            m_VertexBufferMemory;
 	std::unique_ptr<VkBuffer> m_IndexBuffer;
+	VkDeviceMemory            m_IndexBufferMemory;
 
 	// Image
+	uint8_t            *m_ImageData;
 	VkImage             m_TextureImage;
 	VkDeviceMemory      m_TextureImageMemory;
 	VkImageView         m_TextureImageView;
@@ -101,7 +111,8 @@ class Model
 	bool     hasIndexBuffer = false;
 	uint32_t indexCount;
 
-	size_t m_AlignedSize = 0;
+	size_t   m_AlignedSize = 0;
+	uint32_t m_MipLevels   = 1;
 
 	VkDescriptorSet m_DescriptorSet = nullptr;
 

@@ -32,6 +32,22 @@ namespace Walnut
 namespace Utils
 {
 
+static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(Application::GetPhysicalDevice(), &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+	{
+		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+		{
+			return i;
+		}
+	}
+
+	throw std::runtime_error("failed to find suitable memory type!");
+}
+
 static uint32_t GetVulkanMemoryType(VkMemoryPropertyFlags properties, uint32_t type_bits)
 {
 	VkPhysicalDeviceMemoryProperties prop;
@@ -81,24 +97,24 @@ Model::Model(const std::string &modelpath, const std::string &texturepath) :
 	std::cout << "indices size:" << m_Builder->indices.size() << std::endl;
 
 	std::cout << "[2] Loading texture images from" << m_TextureFilepath << std::endl;
-	int      width, height, channels;
-	uint8_t *data = nullptr;
+	int width, height, channels;
 	if (stbi_is_hdr(m_TextureFilepath.c_str()))
 	{
-		data     = (uint8_t *) stbi_loadf(m_TextureFilepath.c_str(), &width, &height, &channels, 4);
-		m_Format = ImageFormat::RGBA32F;
+		m_ImageData = (uint8_t *) stbi_loadf(m_TextureFilepath.c_str(), &width, &height, &channels, 4);
+		m_Format    = ImageFormat::RGBA32F;
 	}
 	else
 	{
-		data     = stbi_load(m_TextureFilepath.c_str(), &width, &height, &channels, 4);
-		m_Format = ImageFormat::RGBA;
+		m_ImageData = stbi_load(m_TextureFilepath.c_str(), &width, &height, &channels, 4);
+		m_Format    = ImageFormat::RGBA;
 	}
 
-	m_Width  = width;
-	m_Height = height;
+	m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+	m_Width     = width;
+	m_Height    = height;
 
 	AllocateTextureMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
-	SetTextureData(data);
+	SetTextureData(m_ImageData);
 	std::cout << "Texture images descriptorSet: " << m_DescriptorSet << std::endl;
 }
 
@@ -113,7 +129,10 @@ Model::Model(uint32_t width, uint32_t height, Walnut::ImageFormat format, const 
 	std::cout << "Texture images descriptorSet: " << m_DescriptorSet << std::endl;
 }
 
-Model::~Model() = default;
+Model::~Model()
+{
+	Release();
+}
 
 void Walnut::Builder::loadModel(const std::string &filepath)
 {
@@ -175,12 +194,95 @@ void Walnut::Builder::loadModel(const std::string &filepath)
 			if (uniqueVertices.count(vertex) == 0)
 			{
 				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-				// std::cout << "x: " << vertex.position.x << " y: " << vertex.position.y << std::endl;
 				vertices.push_back(vertex);
 			}
 			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+}
+
+// NOTE: for image texture
+void Model::AllocateTextureMemory(uint64_t size)
+{
+	VkDevice device = Application::GetDevice();
+
+	VkResult err;
+
+	VkFormat vulkanFormat = Utils::WalnutFormatToVulkanFormat(m_Format);
+
+	// Create the Image texture
+	{
+		// std::cout << "Image creation" << std::endl;
+		VkImageCreateInfo info = {};
+		info.sType             = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		info.imageType         = VK_IMAGE_TYPE_2D;
+		info.format            = vulkanFormat;
+		info.extent.width      = m_Width;
+		info.extent.height     = m_Height;
+		info.extent.depth      = 1;
+		info.mipLevels         = 1;
+		info.mipLevels         = m_MipLevels;
+		info.arrayLayers       = 1;
+		info.samples           = VK_SAMPLE_COUNT_1_BIT;
+		info.tiling            = VK_IMAGE_TILING_OPTIMAL;
+		info.usage             = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		info.sharingMode       = VK_SHARING_MODE_EXCLUSIVE;
+		info.initialLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		err                    = vkCreateImage(device, &info, nullptr, &m_TextureImage);
+		check_vk_result(err);
+		// std::cout << "Done Image creation" << std::endl;
+		VkMemoryRequirements req;
+		vkGetImageMemoryRequirements(device, m_TextureImage, &req);
+		VkMemoryAllocateInfo alloc_info = {};
+		alloc_info.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		alloc_info.allocationSize       = req.size;
+		alloc_info.memoryTypeIndex      = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req.memoryTypeBits);
+		// std::cout << "Allocate Image memory" << std::endl;
+		err = vkAllocateMemory(device, &alloc_info, nullptr, &m_TextureImageMemory);
+		check_vk_result(err);
+		// std::cout << "Done allocate Image memory" << std::endl;
+		err = vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+		check_vk_result(err);
+		// std::cout << "Don Binding Image memory" << std::endl;
+	}
+
+	// Create the Image View:
+	{
+		// std::cout << "Create Image View" << std::endl;
+		VkImageViewCreateInfo info       = {};
+		info.sType                       = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		info.image                       = m_TextureImage;
+		info.viewType                    = VK_IMAGE_VIEW_TYPE_2D;
+		info.format                      = vulkanFormat;
+		info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		info.subresourceRange.levelCount = 1;
+		info.subresourceRange.layerCount = 1;
+		// info.subresourceRange.layerCount = m_MipLevels;
+		err = vkCreateImageView(device, &info, nullptr, &m_TextureImageView);
+		check_vk_result(err);
+	}
+
+	// Create sampler:
+	{
+		// std::cout << "Create sampler" << std::endl;
+		VkSamplerCreateInfo info = {};
+		info.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		info.magFilter           = VK_FILTER_LINEAR;
+		info.minFilter           = VK_FILTER_LINEAR;
+		info.mipmapMode          = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		info.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		info.minLod              = -1000;
+		info.maxLod              = 1000;
+		info.maxAnisotropy       = 1.0f;
+		VkResult err             = vkCreateSampler(device, &info, nullptr, &m_TextureSampler);
+		check_vk_result(err);
+	}
+
+	// Create the Descriptor Set:
+	// std::cout << "Create Description set" << std::endl;
+	m_DescriptorSet = (VkDescriptorSet) ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void Model::SetTextureData(const void *data)
@@ -238,10 +340,105 @@ void Model::SetTextureData(const void *data)
 	}
 }
 
+void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory)
+{
+	auto               device = Application::GetDevice();
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size        = size;
+	bufferInfo.usage       = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create buffer!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize  = memRequirements.size;
+	allocInfo.memoryTypeIndex = Utils::GetVulkanMemoryType(properties, memRequirements.memoryTypeBits);
+
+	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to allocate buffer memory!");
+	}
+
+	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+}
+
+void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	VkCommandBuffer commandBuffer = Application::GetCommandBuffer(true);
+
+	VkBufferCopy copyRegion{};
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+}
+
+void Model::CreateVertexBuffer()
+{
+	auto         device     = Application::GetDevice();
+	VkDeviceSize bufferSize = sizeof(m_Builder->vertices[0]) * m_Builder->vertices.size();
+
+	VkBuffer       stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void *data;
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, m_Builder->vertices.data(), (size_t) bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *m_VertexBuffer, m_VertexBufferMemory);
+
+	copyBuffer(stagingBuffer, *m_VertexBuffer, bufferSize);
+}
+
+void Model::CreateIndexBuffer()
+{
+	auto         device     = Application::GetDevice();
+	VkDeviceSize bufferSize = sizeof(m_Builder->indices[0]) * m_Builder->indices.size();
+
+	VkBuffer       stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void *data;
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, m_Builder->indices.data(), (size_t) bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *m_IndexBuffer, m_IndexBufferMemory);
+
+	copyBuffer(stagingBuffer, *m_IndexBuffer, bufferSize);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+void createUniformBuffers()
+{
+	// VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	//
+	// uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	// uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+	// uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+	//
+	// for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	// {
+	// 	createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+	//
+	// 	vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+	// }
+}
+
 void Model::Release()
 {
-	Application::SubmitResourceFree([sampler = m_TextureSampler, imageView = m_TextureImageView, image = m_TextureImage,
-	                                 memory = m_TextureImageMemory, stagingBuffer = m_StagingBuffer, stagingBufferMemory = m_StagingBufferMemory]() {
+	Application::SubmitResourceFree([sampler = m_TextureSampler, imageView = m_TextureImageView, image = m_TextureImage, memory = m_TextureImageMemory, stagingBuffer = m_StagingBuffer, stagingBufferMemory = m_StagingBufferMemory]() {
 		VkDevice device = Application::GetDevice();
 
 		vkDestroySampler(device, sampler, nullptr);
@@ -258,88 +455,6 @@ void Model::Release()
 	m_TextureImageMemory  = nullptr;
 	m_StagingBuffer       = nullptr;
 	m_StagingBufferMemory = nullptr;
-}
-
-// NOTE: for image texture
-void Model::AllocateTextureMemory(uint64_t size)
-{
-	VkDevice device = Application::GetDevice();
-
-	VkResult err;
-
-	VkFormat vulkanFormat = Utils::WalnutFormatToVulkanFormat(m_Format);
-
-	// Create the Image texture
-	{
-		// std::cout << "Image creation" << std::endl;
-		VkImageCreateInfo info = {};
-		info.sType             = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		info.imageType         = VK_IMAGE_TYPE_2D;
-		info.format            = vulkanFormat;
-		info.extent.width      = m_Width;
-		info.extent.height     = m_Height;
-		info.extent.depth      = 1;
-		info.mipLevels         = 1;
-		info.arrayLayers       = 1;
-		info.samples           = VK_SAMPLE_COUNT_1_BIT;
-		info.tiling            = VK_IMAGE_TILING_OPTIMAL;
-		info.usage             = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		info.sharingMode       = VK_SHARING_MODE_EXCLUSIVE;
-		info.initialLayout     = VK_IMAGE_LAYOUT_UNDEFINED;
-		err                    = vkCreateImage(device, &info, nullptr, &m_TextureImage);
-		check_vk_result(err);
-		// std::cout << "Done Image creation" << std::endl;
-		VkMemoryRequirements req;
-		vkGetImageMemoryRequirements(device, m_TextureImage, &req);
-		VkMemoryAllocateInfo alloc_info = {};
-		alloc_info.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		alloc_info.allocationSize       = req.size;
-		alloc_info.memoryTypeIndex      = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req.memoryTypeBits);
-		// std::cout << "Allocate Image memory" << std::endl;
-		err = vkAllocateMemory(device, &alloc_info, nullptr, &m_TextureImageMemory);
-		check_vk_result(err);
-		// std::cout << "Done allocate Image memory" << std::endl;
-		err = vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
-		check_vk_result(err);
-		// std::cout << "Don Binding Image memory" << std::endl;
-	}
-
-	// Create the Image View:
-	{
-		// std::cout << "Create Image View" << std::endl;
-		VkImageViewCreateInfo info       = {};
-		info.sType                       = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		info.image                       = m_TextureImage;
-		info.viewType                    = VK_IMAGE_VIEW_TYPE_2D;
-		info.format                      = vulkanFormat;
-		info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		info.subresourceRange.levelCount = 1;
-		info.subresourceRange.layerCount = 1;
-		err                              = vkCreateImageView(device, &info, nullptr, &m_TextureImageView);
-		check_vk_result(err);
-	}
-
-	// Create sampler:
-	{
-		// std::cout << "Create sampler" << std::endl;
-		VkSamplerCreateInfo info = {};
-		info.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		info.magFilter           = VK_FILTER_LINEAR;
-		info.minFilter           = VK_FILTER_LINEAR;
-		info.mipmapMode          = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		info.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		info.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		info.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		info.minLod              = -1000;
-		info.maxLod              = 1000;
-		info.maxAnisotropy       = 1.0f;
-		VkResult err             = vkCreateSampler(device, &info, nullptr, &m_TextureSampler);
-		check_vk_result(err);
-	}
-
-	// Create the Descriptor Set:
-	// std::cout << "Create Description set" << std::endl;
-	m_DescriptorSet = (VkDescriptorSet) ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void Model::Resize(uint32_t width, uint32_t height)

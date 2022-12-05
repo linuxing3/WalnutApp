@@ -44,7 +44,7 @@ class XingRenderer
 	const Scene  *m_ActiveScene  = nullptr;
 	const Camera *m_ActiveCamera = nullptr;
 
-	uint32_t *m_ImageData = nullptr;
-	uint32_t *m_ModelData = nullptr;
+	uint32_t *m_ImageData      = nullptr;
+	uint32_t *m_ModelImageData = nullptr;
 };
 }        // namespace xing
